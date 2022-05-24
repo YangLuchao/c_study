@@ -379,5 +379,5 @@ C 语言的比较运算中， “真”用数字“1”来表示， “假”用
 
 类型转换的原则：占用内存字节数少(值域小)的类型，向占用内存字节数多(值域大)的类型转换，以保证精度不降低。
 
-
+![自动转换原则](https://raw.githubusercontent.com/YangLuchao/c_study/main/%E5%9B%BE/%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%8E%9F%E5%88%99.png)
 
