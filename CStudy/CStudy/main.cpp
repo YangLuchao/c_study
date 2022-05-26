@@ -6,13 +6,14 @@
 //
 
 #include <iostream>
+#include <stdio.h>
 #include "C1.c"
 #include "06-实型.c"
 
-int main(int argc, const char * argv[]) {
+int main() {
     // insert code here...
-    std::cout << "Hello, World!\n";
-//    main0501();
-    main0601();
+//    std::cout << "Hello, World!\n";
+//    main02();
+    main06();
     return 0;
 }

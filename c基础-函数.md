@@ -177,3 +177,54 @@ int main()
 
 -   把函数声明放在头文件xxx.h中，在主函数中包含相应头文件
 -    在头文件对应的xxx.c中实现xxx.h声明的函数
+
+![分文件编程](https://raw.githubusercontent.com/YangLuchao/c_study/main/%E5%9B%BE/%E5%88%86%E6%96%87%E4%BB%B6%E7%BC%96%E7%A8%8B.png)
+
+### 防止头文件重复包含
+
+a.h 中包含 b.h ：
+
+```c
+#include "b.h"
+```
+
+b.h 中包含 a.h：
+
+```c
+#include "a.h"
+```
+
+main.c 中使用其中头文件：
+
+```c
+#include "a.h"
+
+int main()
+{
+	return 0;
+}
+```
+
+==编译会报错==
+
+==为了避免同一个文件被include多次，C/C++中有两种方式，一种是 #ifndef 方式，一种是 #pragma once 方式。==
+
+方法一
+
+```c
+#ifndef __SOMEFILE_H__
+#define __SOMEFILE_H__
+
+// 声明语句
+
+#endif
+```
+
+方法二
+
+```c
+#pragma once
+
+// 声明语句
+```
+
