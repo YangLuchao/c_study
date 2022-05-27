@@ -158,3 +158,56 @@ int main06()
 
     return 0;
 }
+
+int main07()
+{
+    // 没有以“/0”结尾都是char数组
+    char str[] = "hello world";
+    // char类型的指针
+    char *p = str;
+    // *p
+    *p = 'm';
+    // 加了一个char类型的地址
+    p++;
+    // 指针指向的内存的内容变了
+    *p = 'i';
+    printf("%s\n", str);
+
+    // p本来就是char类型，p重新赋值
+    p = "mike jiang";
+    printf("%s\n", p);
+
+
+    char *q = "test";
+    printf("%s\n", q);
+
+    return 0;
+}
+
+#include <stdlib.h>
+#include <string.h>
+
+int main08(void)
+{
+    // 申请一片内存
+    char *p = "11abcd111122abcd333abcd3322abcd3333322qqq";
+    int n = 0;
+
+    while ((p = strstr(p, "abcd")) != NULL)
+    {
+        //能进来，肯定有匹配的子串
+        //重新设置起点位置
+        p = p + strlen("abcd");
+        n++;
+
+        if (*p == 0) //如果到结束符
+        {
+            break;
+        }
+
+    }
+
+    printf("n = %d\n", n);
+
+    return 0;
+}

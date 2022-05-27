@@ -151,9 +151,9 @@ void *指针可以指向任意变量的内存空间：
 
 重点关注两个概念，==指针指向的内存区域、指针的指向==
 
-==const int *p1：指向常量的指针，指针指向的内存区域不能变，指正指向可以变==
-
-==int * const p2：指针常量，指针指向不能变，指针指向的内存可以变==
+==从左往右看，跳过类型，看修饰哪个字符==
+==如果是*， 说明指针指向的内存值不能改变==
+==如果是指针变量，说明指针的指向不能改变==
 
 ```c
 	int a = 100;
@@ -506,20 +506,573 @@ int main()
 
 int main()
 {
+  // 没有以“/0”结尾都是char数组
 	char str[] = "hello world";
+  // p为char类型的指针
 	char *p = str;
+  // *p是char数组首元素，首元素重新赋值为'm'
 	*p = 'm';
+  // p++
 	p++;
+  // *p是char数组第二个元素，第二个元素重新赋值为’i‘
 	*p = 'i';
-	printf("%s\n", str);
+	printf("%s\n", str);// millo world
 
+  // p本来就是char类型指针，p重新赋值
 	p = "mike jiang";
-	printf("%s\n", p);
-
+	printf("%s\n", p);// mike jiang
+	
+ 
 	char *q = "test";
-	printf("%s\n", q);
+	printf("%s\n", q);// q是“test”的地址
 
 	return 0;
 }
 ```
+
+## 字符指针做函数参数
+
+```c
+#include <stdio.h>
+
+void mystrcat(char *dest, const char *src)
+{
+	int len1 = 0;
+	int len2 = 0;
+	while (dest[len1])
+	{
+		len1++;
+	}
+	while (src[len2])
+	{
+		len2++;
+	}
+
+	int i;
+	for (i = 0; i < len2; i++)
+	{
+		dest[len1 + i] = src[i];
+	}
+}
+
+int main()
+{
+	char dst[100] = "hello mike";
+	char src[] = "123456";
+	
+  // 数组名做函数实参，会退化为函数的形参，指针类型
+	mystrcat(dst, src);
+	printf("dst = %s\n", dst);
+
+	return 0;
+}
+```
+
+## const修饰的指针变量
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void)
+{
+	//const修饰一个变量为只读
+	const int a = 10;
+	//a = 100; //err
+
+	//指针变量， 指针指向的内存， 2个不同概念
+	char buf[] = "aklgjdlsgjlkds";
+
+	//从左往右看，跳过类型，看修饰哪个字符
+	//如果是*， 说明指针指向的内存不能改变
+	//如果是指针变量，说明指针的指向不能改变，指针的值不能修改
+	const char *p = buf;
+	// 等价于上面 char const *p1 = buf;
+	//p[1] = '2'; //err
+	p = "agdlsjaglkdsajgl"; //ok
+
+	char * const p2 = buf;
+	p2[1] = '3';
+	//p2 = "salkjgldsjaglk"; //err
+
+	//p3为只读，指向不能变，指向的内存也不能变
+	const char * const p3 = buf;
+
+	return 0;
+}
+```
+
+## 指针数组做为main函数的形参
+
+```c
+int main(int argc, char *argv[]);
+```
+
+-   main函数是操作系统调用的，第一个参数标明argc数组的成员数量，argv数组的每个成员都是char *类型
+
+-   argv是命令行参数的字符串数组
+
+-   argc代表命令行参数的数量，程序名字本身算一个参数
+
+```c
+#include <stdio.h>
+
+//argc: 传参数的个数（包含可执行程序）
+//argv：指针数组，指向输入的参数
+int main(int argc, char *argv[])
+{
+
+	//指针数组，它是数组，每个元素都是指针
+	char *a[] = { "aaaaaaa", "bbbbbbbbbb", "ccccccc" };
+	int i = 0;
+
+	printf("argc = %d\n", argc);
+	for (i = 0; i < argc; i++)
+	{
+		printf("%s\n", argv[i]);
+	}
+	return 0;
+}
+```
+
+## 项目开发常用字符串应用模型
+
+### strstr中的while和do-while模型
+
+利用strstr标准库函数找出一个字符串中substr出现的个数。
+
+#### while模型
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void)
+{
+  // 申请一片内存
+  // p是首char的地址
+	char *p = "11abcd111122abcd333abcd3322abcd3333322qqq";
+	int n = 0;
+
+  // p改为abcd开头首char的地址
+	while ((p = strstr(p, "abcd")) != NULL)
+	{
+		//能进来，肯定有匹配的子串
+		//重新设置起点位置
+		p = p + strlen("abcd");
+		n++;
+
+		if (*p == 0) //如果到结束符
+		{
+			break;
+		}
+
+	}
+
+	printf("n = %d\n", n);
+
+	return 0;
+}
+```
+
+#### do-while模型
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void)
+{
+	char *p = "11abcd111122abcd333abcd3322abcd3333322qqq";
+	int n = 0;
+
+	do
+	{
+    // 从前到后找abcd
+		p = strstr(p, "abcd");
+    // p地址有值
+		if (p != NULL)
+		{
+			n++; //累计个数
+
+			//重新设置查找的起点
+			p = p + strlen("abcd");
+
+		}
+		else //如果没有匹配的字符串，跳出循环
+		{
+			break;
+		}
+	} while (*p != 0); //如果没有到结尾
+
+	printf("n = %d\n", n);
+	return 0;
+}
+```
+
+### 两头堵模型
+
+求非空字符串元素的个数：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+int fun(char *p, int *n)
+{
+	if (p == NULL || n == NULL)
+	{
+		return -1;
+	}
+
+	int begin = 0;
+	int end = strlen(p) - 1;
+
+	//从左边开始
+	//如果当前字符为空，而且没有结束
+	while (p[begin] == ' ' && p[begin] != 0)
+	{
+		begin++; //位置从右移动一位
+	}
+
+	//从右往左移动
+	while (p[end] == ' ' && end > 0)
+	{
+		end--; //往左移动
+	}
+
+	if (end == 0)
+	{
+		return -2;
+	}
+
+	//非空元素个数
+	*n = end - begin + 1;
+
+	return 0;
+}
+
+int main(void)
+{
+	char *p = "      abcddsgadsgefg      ";
+	int ret = 0;
+	int n = 0;
+
+	ret = fun(p, &n);
+	if (ret != 0)
+	{
+		return ret;
+	}
+	printf("非空字符串元素个数：%d\n", n);
+
+	return 0;
+```
+
+### 字符串反转模型(逆置)
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int inverse(char *p)
+{
+	if (p == NULL)
+	{
+		return -1;
+	}
+	char *str = p;
+	int begin = 0;
+	int end = strlen(str) - 1;
+	char tmp;
+
+	while (begin < end)
+	{
+		//交换元素
+		tmp = str[begin];
+		str[begin] = str[end];
+		str[end] = tmp;
+
+		begin++;  //往右移动位置
+		end--;	    //往左移动位置
+	}
+
+	return 0;
+}
+
+int main(void)
+{
+	//char *str = "abcdefg"; //文件常量区，内容不允许修改
+	char str[] = "abcdef";
+
+	int ret = inverse(str);
+	if (ret != 0)
+	{
+		return ret;
+	}
+
+	printf("str ========== %s\n", str);
+	return 0;
+}
+```
+
+## 字符串处理函数
+
+### strcpy()
+
+>#include <string.h>
+>char *strcpy(char *dest, const char *src);
+>功能：把src所指向的字符串复制到dest所指向的空间中，'\0'也会拷贝过去
+>参数：
+>	dest：目的字符串首地址
+>	src：源字符首地址
+>返回值：
+>	成功：返回dest字符串的首地址
+>	失败：NULL
+
+注意：如果参数dest所指的内存空间不够大，可能会造成缓冲溢出的错误情况。
+
+```c
+	char dest[20] = "123456789";
+	char src[] = "hello world";
+	strcpy(dest, src);
+	printf("%s\n", dest);
+```
+
+### strncpy()
+
+>#include <string.h>
+>char *strncpy(char *dest, const char *src, size_t n);
+>功能：把src指向字符串的前n个字符复制到dest所指向的空间中，是否拷贝结束符看指定的长度是否包含'\0'。
+>参数：
+>	dest：目的字符串首地址
+>	src：源字符首地址
+>	n：指定需要拷贝字符串个数
+>
+>返回值：
+>
+>​	成功：返回dest字符串的首地址
+>
+>​	失败：NULL
+
+```c
+	char dest[20] ;
+	char src[] = "hello world";
+
+	strncpy(dest, src, 5);
+	printf("%s\n", dest);
+
+	dest[5] = '\0';
+	printf("%s\n", dest);
+```
+
+### strncat()
+
+>#include <string.h>
+>char *strncat(char *dest, const char *src, size_t n);
+>功能：将src字符串前n个字符连接到dest的尾部，‘\0’也会追加过去
+>参数：
+>	dest：目的字符串首地址
+>	src：源字符首地址
+>	n：指定需要追加字符串个数
+>返回值：
+>	成功：返回dest字符串的首地址
+>	失败：NULL
+
+```c
+	char str[20] = "123";
+	char *src = "hello world";
+	printf("%s\n", strncat(str, src, 5));
+```
+
+### strcmp()
+
+>#include <string.h>
+>int strcmp(const char *s1, const char *s2);
+>功能：比较 s1 和 s2 的大小，比较的是字符ASCII码大小。
+>参数：
+>	s1：字符串1首地址
+>	s2：字符串2首地址
+>返回值：
+>	相等：0
+>	大于：>0 在不同操作系统strcmp结果会不同   返回ASCII差值
+>	小于：<0
+
+```c
+	char *str1 = "hello world";
+	char *str2 = "hello mike";
+
+	if (strcmp(str1, str2) == 0)
+	{
+		printf("str1==str2\n");
+	}
+	else if (strcmp(str1, str2) > 0)
+	{
+		printf("str1>str2\n");
+	}	
+	else
+	{
+		printf("str1<str2\n");
+	}
+```
+
+### sprintf()
+
+>#include <stdio.h>
+>int sprintf(char *str, const char *format, ...);
+>功能：根据参数format字符串来转换并格式化数据，然后将结果输出到str指定的空间中，直到出现字符串结束符 '\0'  为止。
+>参数：
+>	str：字符串首地址
+>	format：字符串格式，用法和printf()一样
+>返回值：
+>	成功：实际格式化的字符个数
+>	失败： - 1
+
+```c
+	char dst[100] = { 0 };
+	int a = 10;
+	char src[] = "hello world";
+	printf("a = %d, src = %s", a, src);
+	printf("\n");
+
+	int len = sprintf(dst, "a = %d, src = %s", a, src);
+	printf("dst = \" %s\"\n", dst);
+	printf("len = %d\n", len);
+```
+
+### sscanf()
+
+>#include <stdio.h>
+>int sscanf(const char *str, const char *format, ...);
+>功能：从str指定的字符串读取数据，并根据参数format字符串来转换并格式化数据。
+>参数：
+>	str：指定的字符串首地址
+>	format：字符串格式，用法和scanf()一样
+>返回值：
+>	成功：参数数目，成功转换的值的个数
+>	失败： - 1
+
+```c
+	char src[] = "a=10, b=20";
+	int a;
+	int b;
+	sscanf(src, "a=%d,  b=%d", &a, &b);
+	printf("a:%d, b:%d\n", a, b);
+```
+
+### strchr()
+
+>#include <string.h>
+>char *strchr(const char *s, int c);
+>功能：在字符串s中查找字母c出现的位置
+>参数：
+>	s：字符串首地址
+>	c：匹配字母(字符)
+>返回值：
+>	成功：返回第一次出现的c地址
+>	失败：NULL
+
+```c
+	char src[] = "ddda123abcd";
+	char *p = strchr(src, 'a');
+	printf("p = %s\n", p);
+```
+
+### strstr()
+
+>#include <string.h>
+>char *strstr(const char *haystack, const char *needle);
+>功能：在字符串haystack中查找字符串needle出现的位置
+>参数：
+>	haystack：源字符串首地址
+>	needle：匹配字符串首地址
+>返回值：
+>	成功：返回第一次出现的needle地址
+>	失败：NULL
+
+```c
+	char src[] = "ddddabcd123abcd333abcd";
+	char *p = strstr(src, "abcd");
+	printf("p = %s\n", p);
+```
+
+### strtok()
+
+>#include <string.h>
+>char *strtok(char *str, const char *delim);
+>功能：来将字符串分割成一个个片段。当strtok()在参数s的字符串中发现参数delim中包含的分割字符时, 则会将该字符改为\0 字符，当连续出现多个时只替换第一个为\0。
+>参数：
+>	str：指向欲分割的字符串
+>	delim：为分割字符串中包含的所有字符
+>返回值：
+>	成功：分割后字符串首地址
+>	失败：NULL
+
+-   在第一次调用时：strtok()必需给予参数s字符串
+
+-   往后的调用则将参数s设置成NULL，每次调用成功则返回指向被分割出片段的指针
+
+```c
+	char a[100] = "adc*fvcv.ebcy*hghbdfg$casdert";
+	char *s = strtok(a, ".*$");//将"*"分割的子串取出
+	while (s != NULL)
+	{
+		printf("%s\n", s);
+		s = strtok(NULL, "*");
+	}
+```
+
+### atoi()
+
+>#include <stdlib.h>
+>int atoi(const char *nptr);
+>功能：atoi()会扫描nptr字符串，跳过前面的空格字符，直到遇到数字或正负号才开始做转换，而遇到非数字或字符串结束符('\0')才结束转换，并将结果返回返回值。
+>参数：
+>	nptr：待转换的字符串
+>返回值：成功转换后整数
+
+类似的函数有：
+
+-   atof()：把一个小数形式的字符串转化为一个浮点数。
+
+-   atol()：将一个字符串转化为long类型
+
+```c
+	char str1[] = "          -10";
+	int num1 = atoi(str1);
+	printf("num1 = %d\n", num1);
+
+	char str2[] = "0.123";
+	double num2 = atof(str2);
+	printf("num2 = %lf\n", num2);
+
+	char str3[] = "123L";
+	long num3 = atol(str3);
+	printf("num3 = %ld\n", num3);
+```
+
+# 指针小结
+
+| ***\*定义\**** | ***\*说明\****                               |
+| -------------- | -------------------------------------------- |
+| int  i         | 定义整形变量                                 |
+| int *p         | 定义一个指向int的指针变量                    |
+| int a[10]      | 定义一个有10个元素的数组，每个元素类型为int  |
+| int *p[10]     | 定义一个有10个元素的数组，每个元素类型为int* |
+| int func()     | 定义一个函数，返回值为int型                  |
+| int *func()    | 定义一个函数，返回值为int *型                |
+| int **p        | 定义一个指向int的指针的指针，二级指针        |
+
+
+
+
+
+
+
+
 
